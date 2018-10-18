@@ -9,7 +9,7 @@ var message = document.getElementById('message'),
 
 // Emit events
 btn.addEventListener('click', function(){
-  socket.emit('chat', {
+  socket.emit('publish_feed', {
       message: message.value,
       handle: handle.value
   });
@@ -17,7 +17,7 @@ btn.addEventListener('click', function(){
 });
 
 // Listen for events
-socket.on('ggg', function(data){
+socket.on('sending_feed_to_another_site', function(data){
     console.log(data)
     output.innerHTML += '<p><strong>' + data.handle + ': </strong>' + data.message + '</p>';
 });

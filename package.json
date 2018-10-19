@@ -1,29 +1,21 @@
 {
-  "name": "websockets-playlist",
+  "name": "feeds_middleware",
   "version": "1.0.0",
-  "description": "A chat app using WebSockets",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "gogo":"nodemon src/index",
+    "build": "./node_modules/.bin/babel src --out-dir dist"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/iamshaunjp/websockets-playlist.git"
-  },
-  "author": "The Net Ninja",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/iamshaunjp/websockets-playlist/issues"
-  },
-  "homepage": "https://github.com/iamshaunjp/websockets-playlist#readme",
   "dependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-register": "^6.26.0",
+    "@babel/polyfill": "^7.0.0",
     "express": "^4.15.2",
     "socket.io": "^1.7.3"
   },
   "devDependencies": {
+    "@babel/cli": "^7.1.2",
+
+    "@babel/core": "^7.1.2",
     "@babel/preset-env": "^7.1.0",
     "nodemon": "^1.11.0"
   }

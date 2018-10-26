@@ -1,12 +1,14 @@
-import * as ApiUtil from './ApiUtil/ApiUtil'
 import bodyParser from 'body-parser'
 import socket from 'socket.io'
 import express from 'express'
 import mongoose from 'mongoose'
 import WebHook from './Router/WebHook'
-import Records from "./Router/Records";
+import Records from "./Router/Records"
+import cors from 'cors'
+
 // App setup
 let app = express();
+
 let server = app.listen(4000, () => console.log('listening for requests on port 4000,'))
 
 mongoose.connect('mongodb://admin:asdasd@l\
@@ -29,40 +31,42 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-
-app.use('/webHook', WebHook)
-app.use('/records', Records)
-
-// Static files
-app.get('/', (req, res) => {
-        console.log('hh')
-        res.send('published on')
-    }
-)
-app.get('/feed/:id', (req, res) => {
-        console.log(req.params)
-        res.send('published on')
-    }
-)
-
+app.use(cors())
 // Socket setup & pass server
-var io = socket(server);
+let io = socket(server);
 io.on('connection', (socket) => {
 
     console.log('made socket connection', socket.id);
 
-    // Handle publish event from ocs 
+    // Handle publish event from ocs
     socket.on('publish_feed', function (data) {
 
         io.sockets.emit('sending_feed_to_another_site', data);
 
     });
+    socket.on('join', (room, cb) => {
+        let rooms = io.sockets.adapter.sids[socket.id];
+        for(let g in rooms) { socket.leave(g) }
+        socket.join(room)
+        cb(room)
+    })
 
     app.post('/', (req, res) => {
 
-        io.sockets.emit('sending_feed_to_another_site', ApiUtil.reformatArticle(req.body));
+        io.sockets.emit('sending_feed_to_another_site', 'gggggg');
 
         res.send('published on another site')
     })
 
 });
+
+app.use((req, res, next) => {
+    req.io = io;
+    next();
+});
+app.use('/webHook', WebHook)
+app.use('/records', Records)
+app.use(express.static('public'));
+
+
+

@@ -17,7 +17,7 @@ webHook.get('/', function (req, res) {
                 if (err) {
                     res.send('db err' + err);
                 } else {
-                    res.send('your webhook is http://localhost:4000/test/' + id);
+                    res.send(id);
                 }
             });
 
@@ -27,28 +27,30 @@ webHook.get('/', function (req, res) {
 
 })
 webHook.all('/:id', (req, res) => {
-    console.log(req.body)
-    webHookSchema.findOne({url: req.params.id}, (err, records) => {
+    webHookSchema.findOne({url: req.params.id}, (err, record) => {
         if (err) {
             console.log(err)
-            res.send(err.toString())
         }
-        if (records) {
+        if (record) {
             recordSchema.create({
                 url: req.params.id,
                 body: req.body,
                 type: req.method,
                 header: req.headers,
-            }, (err, records) => {
+            }, (err, newRecord) => {
                 if (err) {
                     res.send('db err' + err);
                 } else {
-                    res.send(records)
+                    recordSchema.find({url: req.params.id}).exec((err, records) =>
+                        req.io.sockets.to(req.params.id).emit('sending_feed_to_another_site', records
+                        )
+                    )
+                    res.send(newRecord)
 
                 }
             })
         } else {
-            res.send(records)
+            res.send(record)
         }
     })
 

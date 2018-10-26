@@ -15,7 +15,7 @@ records.get('/:id', (req, res) => {
         res.send(records)
         //organize the data suitable to date and send a object keys be name, values be times
 
-    });
+    })
 })
 
 

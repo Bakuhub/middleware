@@ -2,14 +2,15 @@ import express from 'express'
 import crypto from 'crypto'
 import webHookSchema from '../Model/WebHook'
 import recordSchema from '../Model/Records'
+import {PASS_UPDATED_RECORDS_TO_CLIENT_SIDE,} from '../Constants/actionType'
 
 const bcrypt = require('bcryptjs')
 const passport = require('passport')
 
-const webHook = express.Router();
+const webHookRouter = express.Router();
 
-// Login Form
-webHook.get('/', function (req, res) {
+// create personal url
+webHookRouter.get('/', function (req, res) {
     const generatedUrl = () => {
         const id = crypto.randomBytes(20).toString('hex');
         webHookSchema.findOne({url: id}, (err, records) => {
@@ -26,38 +27,46 @@ webHook.get('/', function (req, res) {
     generatedUrl()
 
 })
-webHook.all('/:id', (req, res) => {
-    webHookSchema.findOne({url: req.params.id}, (err, record) => {
+//listen for all url
+webHookRouter.all('/:id', (req, res) => {
+    //check if url exist
+    webHookSchema.findOne({url: req.params.id}, (err, webHook) => {
+        // if db err send back
         if (err) {
-            console.log(err)
+            res.json({err:err})
         }
-        if (record) {
+        //check if find  the  url
+        if (webHook) {
+            //if find the url store the request to record collection
             recordSchema.create({
                 url: req.params.id,
                 body: req.body,
                 type: req.method,
                 header: req.headers,
             }, (err, newRecord) => {
+                //if db err send back
                 if (err) {
-                    res.send('db err' + err);
+
+                    res.json({err:err})
                 } else {
-                    recordSchema.find({url: req.params.id}).exec((err, records) =>
-                        req.io.sockets.to(req.params.id).emit('sending_feed_to_another_site', records
-                        )
+                    //if no err send back updated collection by socket
+                    recordSchema.find({url: req.params.id}).exec((err, records) => {
+                            req.io.sockets.to(req.params.id).emit(PASS_UPDATED_RECORDS_TO_CLIENT_SIDE, records)
+                        }
+                        //todo('if the redirect is valid redirect it ')
                     )
                     res.send(newRecord)
-
                 }
             })
         } else {
-            res.send(record)
+            res.send('dont have such records')
         }
     })
 
 })
 
 
-export default webHook
+export default webHookRouter
 
 
 

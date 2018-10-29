@@ -5,6 +5,7 @@ const recordSchema = new Schema({
     url: {
         type: String,
         required: true,
+
     },
     header: {
         type: Object,

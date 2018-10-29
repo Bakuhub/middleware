@@ -1,7 +1,6 @@
 import express from 'express'
-import crypto from 'crypto'
-import webHookSchema from '../Model/WebHook'
 import recordSchema from '../Model/Records'
+import webHookSchema from "../Model/WebHook";
 
 const bcrypt = require('bcryptjs')
 const passport = require('passport')
@@ -19,6 +18,15 @@ records.get('/:id', (req, res) => {
 })
 
 
+records.post('/:id', (req, res) => {
+    webHookSchema.findOne({url: req.params.id}, (err, webHook) => {
+        req.body.contentType ? webHook.contentType = req.body.contentType : null
+        req.body.redirectPath ? webHook.redirectPath = req.body.redirectPath : null
+        req.body.httpMethod ? webHook.httpMethod = req.body.httpMethod : null
+        webHook.save();
+        res.send(webHook)
+    })
+})
 
 
 export default records

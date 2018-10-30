@@ -30,6 +30,24 @@ webHookRouter.get('/', function (req, res) {
     generatedUrl()
 
 })
+webHookRouter.get('/redirectSetting/:id', (req, res) =>
+    webHookSchema.findOne({url: req.params.id}, (err, webHook) => {
+        console.log(webHook)
+        // if db err send back
+        if (err) {
+            res.json({err: err})
+        }
+        res.send({
+            "redirectPath": webHook.redirectPath?webHook.redirectPath:'',
+            "contentType": webHook.contentType?webHook.contentType:'',
+            "httpMethod": webHook.httpMethod?webHook.httpMethod:'',
+
+
+        })
+        //check if find  the  url
+
+    })
+)
 //listen for all url
 webHookRouter.all('/:id', (req, res) => {
     //check if url exist
@@ -60,20 +78,17 @@ webHookRouter.all('/:id', (req, res) => {
                         axios.defaults.baseURL = ENV.redirectDefaultBaseUrl
                         axios(
                             {
-                                headers:{
-                                    Authorization:ENV.redirectDefaultAuthorization,
-
+                                headers: {
+                                    Authorization: ENV.redirectDefaultAuthorization,
                                 },
-                                contentType:webHook.contentType,
                                 method: webHook.httpMethod,
-                                data:newRecord.body,
+                                data: newRecord.body,
                                 url: webHook.redirectPath,
                             }
                         ).then(response => {
-                            res.send(ApiUtil.cleanStringify(response))
+                            res.send(JSON.parse(ApiUtil.cleanStringify(response)))
                         }).catch(error => {
-
-                                res.send(error.toString())
+                                res.send(JSON.parse(ApiUtil.cleanStringify(error)))
                             }
                         )
 

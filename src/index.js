@@ -10,7 +10,7 @@ import {JOIN_ROOM_BY_URL, PASS_UPDATED_RECORDS_TO_CLIENT_SIDE} from './Constants
 // App setup
 let app = express();
 
-let server = app.listen(ENV.port, () => console.log('listening for requests on port 4000,'))
+let server = app.listen(ENV.port, () => console.log('listening for requests on port '+ENV.port))
 
 mongoose.connect(ENV.dbConnection, {useNewUrlParser: true}).then(
     res => console.log('connected to db')

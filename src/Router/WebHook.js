@@ -2,7 +2,10 @@ import express from 'express'
 import crypto from 'crypto'
 import webHookSchema from '../Model/WebHook'
 import recordSchema from '../Model/Records'
+import * as ApiUtil from '../ApiUtil/ApiUtil'
+import * as ENV from '../Constants/ENV'
 import {PASS_UPDATED_RECORDS_TO_CLIENT_SIDE,} from '../Constants/actionType'
+import axios from 'axios'
 
 const bcrypt = require('bcryptjs')
 const passport = require('passport')
@@ -33,7 +36,7 @@ webHookRouter.all('/:id', (req, res) => {
     webHookSchema.findOne({url: req.params.id}, (err, webHook) => {
         // if db err send back
         if (err) {
-            res.json({err:err})
+            res.json({err: err})
         }
         //check if find  the  url
         if (webHook) {
@@ -46,20 +49,39 @@ webHookRouter.all('/:id', (req, res) => {
             }, (err, newRecord) => {
                 //if db err send back
                 if (err) {
-
-                    res.json({err:err})
-                } else {
-                    //if no err send back updated collection by socket
-                    recordSchema.find({url: req.params.id}).exec((err, records) => {
-                            req.io.sockets.to(req.params.id).emit(PASS_UPDATED_RECORDS_TO_CLIENT_SIDE, records)
-                        }
-                        //todo('if the redirect is valid redirect it ')
-                    )
-                    res.send(newRecord)
+                    res.json({err: err})
                 }
+
+                //if no err send back updated collection by socket
+                recordSchema.find({url: req.params.id}).exec((err, records) => {
+                        req.io.sockets.to(req.params.id).emit(PASS_UPDATED_RECORDS_TO_CLIENT_SIDE, records)
+
+                        axios.defaults.headers.common['Content-Type'] = ENV.redirectDefaultContentType
+                        axios.defaults.baseURL = ENV.redirectDefaultBaseUrl
+                        axios(
+                            {
+                                headers:{
+                                    Authorization:ENV.redirectDefaultAuthorization,
+
+                                },
+                                contentType:webHook.contentType,
+                                method: webHook.httpMethod,
+                                data:newRecord.body,
+                                url: webHook.redirectPath,
+                            }
+                        ).then(response => {
+                            res.send(ApiUtil.cleanStringify(response))
+                        }).catch(error => {
+
+                                res.send(error.toString())
+                            }
+                        )
+
+                    }
+                    //todo('if the redirect is valid redirect it ')
+
+                )
             })
-        } else {
-            res.send('dont have such records')
         }
     })
 

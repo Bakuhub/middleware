@@ -5,17 +5,14 @@ import mongoose from 'mongoose'
 import WebHook from './Router/WebHook'
 import Records from "./Router/Records"
 import cors from 'cors'
+import * as ENV from './Constants/ENV'
 import {JOIN_ROOM_BY_URL, PASS_UPDATED_RECORDS_TO_CLIENT_SIDE} from './Constants/actionType'
 // App setup
 let app = express();
 
-let server = app.listen(4000, () => console.log('listening for requests on port 4000,'))
+let server = app.listen(ENV.port, () => console.log('listening for requests on port 4000,'))
 
-mongoose.connect('mongodb://admin:asdasd@l\
-eaderboard-shard-00-00-nvj4r.mongodb.net:27017,leaderboard\
--shard-00-01-nvj4r.mongodb.net:27017,leaderboard-shard-00-02-nv\
-j4r.mongodb.net:27017/retail?authSource=admin&replicaSet=leaderboard\
--shard-0&ssl=true', {useNewUrlParser: true}).then(
+mongoose.connect(ENV.dbConnection, {useNewUrlParser: true}).then(
     res => console.log('connected to db')
 ).catch(
     err => console.log(err)

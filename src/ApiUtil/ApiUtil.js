@@ -19,26 +19,29 @@ export const reformatArticle = article => {
 
 }
 
-export const preventCircularJson = (o) => {
-    let cache = [];
 
-    JSON.stringify(o, function (key, value) {
-        if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) {
-                // Duplicate reference found
-                try {
-                    // If this value does not reference a parent it can be deduped
-                    return JSON.parse(JSON.stringify(value));
-                } catch (error) {
-                    // discard key if value cannot be deduped
-                    return;
+export const  cleanStringify=(object)=> {
+    if (object && typeof object === 'object') {
+        object = copyWithoutCircularReferences([object], object);
+    }
+    return JSON.stringify(object);
+
+    function copyWithoutCircularReferences(references, object) {
+        var cleanObject = {};
+        Object.keys(object).forEach(function(key) {
+            var value = object[key];
+            if (value && typeof value === 'object') {
+                if (references.indexOf(value) < 0) {
+                    references.push(value);
+                    cleanObject[key] = copyWithoutCircularReferences(references, value);
+                    references.pop();
+                } else {
+                    cleanObject[key] = '###_Circular_###';
                 }
+            } else if (typeof value !== 'function') {
+                cleanObject[key] = value;
             }
-            // Store value in our collection
-            cache.push(value);
-        }
-        return value;
-    });
-
-    return cache
+        });
+        return cleanObject;
+    }
 }

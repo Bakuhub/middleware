@@ -23,6 +23,8 @@ records.post('/:id', (req, res) => {
         req.body.contentType ? webHook.contentType = req.body.contentType : null
         req.body.redirectPath ? webHook.redirectPath = req.body.redirectPath : null
         req.body.httpMethod ? webHook.httpMethod = req.body.httpMethod : null
+     webHook.autoRedirect = req.body.autoRedirect
+
         webHook.save();
         res.send(webHook)
     })

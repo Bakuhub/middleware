@@ -32,15 +32,15 @@ webHookRouter.get('/', function (req, res) {
 })
 webHookRouter.get('/redirectSetting/:id', (req, res) =>
     webHookSchema.findOne({url: req.params.id}, (err, webHook) => {
-        console.log(webHook)
         // if db err send back
         if (err) {
             res.json({err: err})
         }
         res.send({
-            "redirectPath": webHook.redirectPath?webHook.redirectPath:'',
-            "contentType": webHook.contentType?webHook.contentType:'',
-            "httpMethod": webHook.httpMethod?webHook.httpMethod:'',
+            redirectPath: webHook.redirectPath,
+            contentType: webHook.contentType,
+            httpMethod: webHook.httpMethod,
+            autoRedirect: webHook.autoRedirect,
 
 
         })
@@ -73,28 +73,28 @@ webHookRouter.all('/:id', (req, res) => {
                 //if no err send back updated collection by socket
                 recordSchema.find({url: req.params.id}).exec((err, records) => {
                         req.io.sockets.to(req.params.id).emit(PASS_UPDATED_RECORDS_TO_CLIENT_SIDE, records)
+                        if (webHook.autoRedirect === true) {
+                            axios.defaults.headers.common['Content-Type'] = ENV.redirectDefaultContentType
+                            axios.defaults.baseURL = ENV.redirectDefaultBaseUrl
+                            axios(
+                                {
+                                    headers: {
+                                        Authorization: ENV.redirectDefaultAuthorization,
+                                    },
+                                    method: webHook.httpMethod === 'default' ? newRecord.type : webHook.httpMethod,
+                                    data: newRecord.body,
+                                    url: webHook.redirectPath,
+                                }
+                            ).then(response => {
+                                res.send(JSON.parse(ApiUtil.cleanStringify(response)))
+                            }).catch(error => {
+                                    res.send(JSON.parse(ApiUtil.cleanStringify(error)))
+                                }
+                            )
 
-                        axios.defaults.headers.common['Content-Type'] = ENV.redirectDefaultContentType
-                        axios.defaults.baseURL = ENV.redirectDefaultBaseUrl
-                        axios(
-                            {
-                                headers: {
-                                    Authorization: ENV.redirectDefaultAuthorization,
-                                },
-                                method: webHook.httpMethod,
-                                data: newRecord.body,
-                                url: webHook.redirectPath,
-                            }
-                        ).then(response => {
-                            res.send(JSON.parse(ApiUtil.cleanStringify(response)))
-                        }).catch(error => {
-                                res.send(JSON.parse(ApiUtil.cleanStringify(error)))
-                            }
-                        )
-
+                        }
+res.send('request recorded but didnt redirect ude to auto redirect is false')
                     }
-                    //todo('if the redirect is valid redirect it ')
-
                 )
             })
         }

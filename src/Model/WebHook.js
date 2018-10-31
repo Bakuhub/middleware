@@ -5,7 +5,6 @@ const webHookSchema = new Schema({
     url: {
         type: String,
         required: true,
-        default: '',
 
     },
     redirectPath: {
@@ -14,11 +13,15 @@ const webHookSchema = new Schema({
     },
     contentType: {
         type: String,
-        default: ''
+        default: 'application/json',
     },
     httpMethod: {
         type: String,
-        default: ''
+        default: 'default',
+    },
+    autoRedirect:{
+        type: Boolean,
+        default: false,
     },
 
 });

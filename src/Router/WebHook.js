@@ -53,9 +53,7 @@ webHookRouter.all('/:id', (req, res) => {
     //check if url exist
     webHookSchema.findOne({url: req.params.id}, (err, webHook) => {
         // if db err send back
-        if (err) {
-            res.json({err: err})
-        }
+        if (err) {res.json({err: err})}
         //check if find  the  url
         if (webHook) {
             //if find the url store the request to record collection
@@ -74,8 +72,7 @@ webHookRouter.all('/:id', (req, res) => {
                 recordSchema.find({url: req.params.id}).exec((err, records) => {
                         req.io.sockets.to(req.params.id).emit(PASS_UPDATED_RECORDS_TO_CLIENT_SIDE, records)
                         if (webHook.autoRedirect === true) {
-                            axios.defaults.headers.common['Content-Type'] = ENV.redirectDefaultContentType
-                            axios.defaults.baseURL = ENV.redirectDefaultBaseUrl
+                            axios.defaults.headers.common['Content-Type'] = webHook.contentType
                             axios(
                                 {
                                     headers: {
@@ -92,11 +89,15 @@ webHookRouter.all('/:id', (req, res) => {
                                 }
                             )
 
+                        }else{
+                            res.send('request recorded but didnt redirect ude to auto redirect is false')
+
                         }
-res.send('request recorded but didnt redirect ude to auto redirect is false')
                     }
                 )
             })
+        }else{
+
         }
     })
 

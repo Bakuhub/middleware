@@ -5,6 +5,8 @@ import mongoose from 'mongoose'
 import WebHook from './Router/WebHook'
 import Records from "./Router/Records"
 import cors from 'cors'
+import "babel-polyfill";
+import "./index"
 import * as ENV from './Constants/ENV'
 import {JOIN_ROOM_BY_URL, PASS_UPDATED_RECORDS_TO_CLIENT_SIDE} from './Constants/actionType'
 // App setup

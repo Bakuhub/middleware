@@ -6,6 +6,7 @@ import * as ApiUtil from '../ApiUtil/ApiUtil'
 import * as ENV from '../Constants/ENV'
 import {PASS_UPDATED_RECORDS_TO_CLIENT_SIDE,} from '../Constants/actionType'
 import axios from 'axios'
+import {redirectRecordToWebsite} from "../Controller/Redirect";
 
 const bcrypt = require('bcryptjs')
 const passport = require('passport')
@@ -72,22 +73,7 @@ webHookRouter.all('/:id', (req, res) => {
                 recordSchema.find({url: req.params.id}).exec((err, records) => {
                         req.io.sockets.to(req.params.id).emit(PASS_UPDATED_RECORDS_TO_CLIENT_SIDE, records)
                         if (webHook.autoRedirect === true) {
-                            axios.defaults.headers.common['Content-Type'] = webHook.contentType
-                            axios(
-                                {
-                                    headers: {
-                                        Authorization: ENV.redirectDefaultAuthorization,
-                                    },
-                                    method: webHook.httpMethod === 'default' ? newRecord.type : webHook.httpMethod,
-                                    data: newRecord.body,
-                                    url: webHook.redirectPath,
-                                }
-                            ).then(response => {
-                                res.send(JSON.parse(ApiUtil.cleanStringify(response)))
-                            }).catch(error => {
-                                    res.send(JSON.parse(ApiUtil.cleanStringify(error)))
-                                }
-                            )
+                          res.send(redirectRecordToWebsite(  webHook,newRecord))
 
                         }else{
                             res.send('request recorded but didnt redirect ude to auto redirect is false')

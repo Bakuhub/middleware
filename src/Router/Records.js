@@ -1,7 +1,9 @@
 import express from 'express'
 import recordSchema from '../Model/Records'
 import webHookSchema from "../Model/WebHook";
-import {redirectRecordToWebsite} from "../Controller/Redirect";
+import * as ApiUtil from "../ApiUtil/ApiUtil";
+import axios from "axios/index";
+import * as ENV from "../Constants/ENV";
 
 const bcrypt = require('bcryptjs')
 const passport = require('passport')
@@ -19,16 +21,29 @@ recordsRouter.get('/:id', (req, res) => {
 })
 
 
-recordsRouter.get('/manuallyRedirect/:requestId', (req, res) =>
-    recordSchema.findOne({_id: req.params.requestId}).exec().then((record) => {
-        // if db err send back
-        webHookSchema.findOne({url: record.url}).exec().then((webHook) => {
-            console.log(redirectRecordToWebsite(webHook, record))
-            res.send(redirectRecordToWebsite(webHook, record))
-        }).catch(err => res.send({err: err}))
-        //check if find  the  url
-    }).catch(err => res.send({err: err})))
+recordsRouter.get('/manuallyRedirect/:requestId', (req, res) => {
+    //check if url exist
+    recordSchema.findById(req.params.requestId, (err, record) => {
+            if (err) res.send(err)
+            webHookSchema.findOne({url: record.url}).exec((err, webHook) => {
+                axios.defaults.headers.common['Content-Type'] = webHook.contentType
+                axios(
+                    {
+                        headers: {
+                            Authorization: ENV.redirectDefaultAuthorization,
+                        },
+                        method: webHook.httpMethod === 'default' ? record.type : webHook.httpMethod,
+                        data: record.body,
+                        url: webHook.redirectPath,
+                    })
+                    .then(response => res.send(JSON.parse(ApiUtil.cleanStringify(response))))
+                    .catch(err => res.send(JSON.parse(ApiUtil.cleanStringify(err))))
 
+
+            })
+        }
+    )
+})
 recordsRouter.post('/:id', (req, res) => {
     webHookSchema.findOne({url: req.params.id}, (err, webHook) => {
         req.body.contentType ? webHook.contentType = req.body.contentType : null

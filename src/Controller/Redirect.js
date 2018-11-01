@@ -3,11 +3,11 @@ import axios from "axios/index";
 import * as ENV from "../Constants/ENV";
 
 
-export const redirectRecordToWebsite = async  (webHook, record) => {
+export const redirectRecordToWebsite =  (webHook, record) => {
 
 
     axios.defaults.headers.common['Content-Type'] = webHook.contentType
-   await  axios(
+      axios(
         {
             headers: {
                 Authorization: ENV.redirectDefaultAuthorization,
@@ -17,8 +17,7 @@ export const redirectRecordToWebsite = async  (webHook, record) => {
             url: webHook.redirectPath,
         }
     ).then(response =>
-             JSON.parse(ApiUtil.cleanStringify(response))
-
+        JSON.parse(ApiUtil.cleanStringify(response))
     ).catch(error => JSON.parse(ApiUtil.cleanStringify(error)))
 
 

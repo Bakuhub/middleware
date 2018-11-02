@@ -139,8 +139,6 @@ webHookRouter.all('/:id', (req, res) => {
                                     url: webHook.redirectPath,
                                 }
                             ).then(response =>{
-
-                                    console.log(response)
                                     res.send(JSON.parse(ApiUtil.cleanStringify(response)))
 
                                 }

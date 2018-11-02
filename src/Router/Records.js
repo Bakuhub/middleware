@@ -27,6 +27,7 @@ recordsRouter.get('/manuallyRedirect/:requestId', (req, res) => {
             if (err) res.send(err)
             webHookSchema.findOne({url: record.url}).exec((err, webHook) => {
                 axios.defaults.headers.common['Content-Type'] = webHook.contentType
+
                 axios(
                     {
                         headers: {

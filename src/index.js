@@ -44,9 +44,7 @@ io.on('connection', (socket) => {
     });
     socket.on(JOIN_ROOM_BY_URL, (room, cb) => {
         let rooms = io.sockets.adapter.sids[socket.id];
-        for (let g in rooms) {
-            socket.leave(g)
-        }
+        for (let g in rooms) {socket.leave(g)}
         socket.join(room)
         cb(room)
     })
